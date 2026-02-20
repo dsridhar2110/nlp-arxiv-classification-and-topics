@@ -1,0 +1,17 @@
+{
+  "note": "Test set results from notebook (Part 1: Text Classification). SVM abstract F1 0.920 vs title 0.865; LSTM abstract 0.917 vs title 0.908.",
+  "table": [
+    {"Model": "LogReg", "Input": "Title", "Size": "1000", "F1": 0.841, "Precision": 0.858, "Recall": 0.824, "Accuracy": 0.774},
+    {"Model": "LogReg", "Input": "Title", "Size": "full", "F1": 0.898, "Precision": 0.945, "Recall": 0.855, "Accuracy": 0.859},
+    {"Model": "LogReg", "Input": "Abstract", "Size": "1000", "F1": 0.900, "Precision": 0.909, "Recall": 0.890, "Accuracy": 0.857},
+    {"Model": "LogReg", "Input": "Abstract", "Size": "full", "F1": 0.917, "Precision": 0.959, "Recall": 0.878, "Accuracy": 0.885},
+    {"Model": "SVM", "Input": "Title", "Size": "1000", "F1": 0.855, "Precision": 0.780, "Recall": 0.945, "Accuracy": 0.767},
+    {"Model": "SVM", "Input": "Title", "Size": "full", "F1": 0.908, "Precision": 0.898, "Recall": 0.919, "Accuracy": 0.866},
+    {"Model": "SVM", "Input": "Abstract", "Size": "1000", "F1": 0.890, "Precision": 0.849, "Recall": 0.936, "Accuracy": 0.833},
+    {"Model": "SVM", "Input": "Abstract", "Size": "full", "F1": 0.920, "Precision": 0.917, "Recall": 0.924, "Accuracy": 0.884},
+    {"Model": "LSTM", "Input": "Title", "Size": "1000", "F1": 0.840, "Precision": 0.726, "Recall": 0.996, "Accuracy": 0.726},
+    {"Model": "LSTM", "Input": "Title", "Size": "full", "F1": 0.908, "Precision": 0.919, "Recall": 0.897, "Accuracy": 0.868},
+    {"Model": "LSTM", "Input": "Abstract", "Size": "1000", "F1": 0.844, "Precision": 0.736, "Recall": 0.989, "Accuracy": 0.735},
+    {"Model": "LSTM", "Input": "Abstract", "Size": "full", "F1": 0.917, "Precision": 0.931, "Recall": 0.902, "Accuracy": 0.881}
+  ]
+}
