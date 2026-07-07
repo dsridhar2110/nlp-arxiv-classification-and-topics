@@ -667,8 +667,113 @@
         A larger model on the full 217k with more epochs <b>might</b> edge ahead by a point or two — so the honest claim
         is "under a realistic budget it tied; I'd expect at most a small gain from full fine-tuning, because the task
         isn't context-heavy." Code: <code>ml/bert_finetune.py</code>, results: <code>ml/bert_results.json</code>.</div>
-      <div class="callout key"><b>Still on the hook (next):</b> an optional <b>BERTopic</b> (transformer-embedding topic
-        modelling) to compare against LDA, and the <b>website layer + deploy</b>. We'll add those the same honest way.</div>
+      <div class="callout key"><b>And there's a second transformer experiment below</b> — <b>BERTopic</b> for the
+        topic-modelling side, where the transformer actually <em>won</em>. That contrast is the whole story.</div>
+    </section>
+
+    <section>
+      <h2>Phase 2b · BERTopic — where the transformer actually won</h2>
+      <div class="h2sub">Transformer topic modelling vs LDA, on the same abstracts</div>
+      <p class="lead-note">The classification transformer only tied. But on the <b>topic</b> side — which is about grouping
+        by <b>meaning</b> — the transformer (BERTopic) won clearly. Same corpus, judged by the <b>same coherence score</b>
+        I used for LDA (higher = more meaningful topics).</p>
+      <div class="card">
+        <table class="board">
+          <thead><tr><th>Topic model</th><th># topics</th><th>Coherence (c_v)</th></tr></thead>
+          <tbody>
+            <tr><td>LDA <span style="color:var(--muted);font-size:12px">(bag-of-words)</span></td><td class="num">25</td><td class="num">0.584</td></tr>
+            <tr class="win"><td>BERTopic <span style="color:var(--muted);font-size:12px">(transformer embeddings)</span></td><td class="num">40</td><td class="num">0.780</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:15px;color:#1e293b;margin-top:14px"><b>BERTopic won clearly — 0.78 vs 0.58, ~34% higher
+          coherence</b> — and <b>80% of its discovered topics map cleanly onto a known subfield</b>. The topics it found
+          are crisp and specific: <em>reinforcement learning · speech recognition · adversarial ML · graph neural
+          networks.</em></p>
+      </div>
+      <div class="callout key"><b>The whole story in one line:</b> my classification transformer <b>tied</b> the simple
+        model (a vocabulary task), but my topic transformer <b>won</b> (a meaning task). Same project — <b>both sides
+        demonstrated:</b> a transformer wins when <em>meaning</em> matters, not when keywords already decide it.</div>
+    </section>
+
+    <section>
+      <h2>When do we use LDA vs BERTopic?</h2>
+      <div class="h2sub">The scenario — from an interview standpoint</div>
+      <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th></th><th>LDA</th><th>BERTopic</th></tr></thead>
+          <tbody>
+            <tr><td><b>Groups documents by…</b></td><td>which words they share (bag-of-words)</td><td>what they <em>mean</em> (transformer embeddings)</td></tr>
+            <tr><td><b>Number of topics</b></td><td>you pick K yourself</td><td>auto-discovered from the data (+ an outlier group)</td></tr>
+            <tr><td><b>Best when…</b></td><td>fast, no GPU, topics have distinct vocabulary</td><td>meaning/synonyms matter, you want cleaner topics</td></tr>
+            <tr><td><b>Cost</b></td><td>cheap, quick</td><td>needs embeddings (compute)</td></tr>
+            <tr><td><b>Here (coherence)</b></td><td>0.58</td><td><b>0.78</b> ✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>The questions they'll ask</h2>
+      <div class="h2sub">BERTopic, answered for the interview</div>
+
+      <details open>
+        <summary><span class="who">They ask</span><span class="q">How did you evaluate the topics — what's coherence, and why did it matter?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"Topic modelling is <b>unsupervised</b> — there's no 'correct' answer to check against — so I score
+            the topics with a <b>coherence</b> metric (c_v). In plain terms, it asks: do a topic's top words genuinely
+            <b>belong together</b>, based on how often they actually co-occur in the text? Higher = more meaningful. The
+            key move is that I computed the <b>exact same coherence for both LDA and BERTopic</b>, so it's a fair,
+            apples-to-apples number — <b>0.78 vs 0.58</b>. That's the objective evidence, not just me liking the topics.
+            I also read them and checked they mapped to known subfields — 80% did."</div>
+          <div class="tip anchor"><b>Land this:</b> coherence = "do the topic's words belong together"; same metric for both = a fair comparison.</div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="who">They ask</span><span class="q">Why did BERTopic find 40 topics but LDA 25? How did it analyse them differently?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"That's the biggest practical difference. With LDA I have to <b>pick the number of topics (K)
+            upfront</b> — I set 25. BERTopic <b>auto-discovers</b> the number: it <b>clusters the document embeddings</b>
+            and lets the data decide, so it found 40 natural clusters — <em>plus</em> an <b>outlier group</b> for
+            documents that don't fit any topic, which LDA can't do. So it's not just scoring higher; it's finding the
+            <b>natural structure</b> and being more granular — it cleanly separated things like speech recognition from
+            reinforcement learning. If I wanted fewer, I could merge them; the point is it didn't need me to guess K."</div>
+          <div class="tip anchor"><b>Land this:</b> LDA = you choose K; BERTopic = it discovers K by clustering (and flags outliers).</div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="who">They ask</span><span class="q">Did you use bigrams?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"Yes — for the <b>topic labels</b>. I described each topic with a vectorizer that allows two-word
+            phrases (<b>bigrams</b>), so a topic reads as 'machine translation' or 'graph neural' instead of loose single
+            words — much more interpretable. In Phase 1 I'd also tested LDA <b>with and without bigrams</b>. One nuance:
+            bigrams make the topic <em>readable</em>, but the actual <b>clustering is done on the transformer
+            embeddings</b>, not the words — so bigrams shape the label, not the grouping."</div>
+          <div class="tip anchor"><b>Land this:</b> bigrams = readable two-word topic labels; the grouping itself is on embeddings.</div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="who">They ask</span><span class="q">Is BERTopic always better than LDA?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"No — and I can prove it with my <em>own</em> results. BERTopic won <b>here</b> because topic
+            modelling is about grouping by <b>meaning</b>, which is the transformer's strength. But it <b>costs compute</b>
+            (the embeddings), while LDA is fast, GPU-free, and gives a clean 'each document is a mix of topics' view. So
+            I'd reach for BERTopic when I want the cleanest, most meaningful topics and can afford it; LDA when I want a
+            quick, cheap, interpretable baseline. Same judgement as everywhere in my work — <b>benchmark both, pick what
+            fits the task.</b>"</div>
+          <div class="tip anchor"><b>Land this:</b> not always — it won because meaning matters here; LDA still wins on speed/cost.</div>
+        </div>
+      </details>
+
+      <div class="callout key"><b>The win holds at scale.</b> At <b>20k</b>: BERTopic <b>0.78</b> vs LDA 0.58. At
+        <b>100k</b>: BERTopic <b>0.71</b> vs LDA 0.57 (76% of topics still map to a known subfield). Consistent, clear
+        win on both — and at 100k the clean labels even show bigrams like "reinforcement learning" and "federated learning".</div>
+      <div class="callout honest"><b>Honest notes:</b> coherence isn't perfectly comparable across different topic
+        counts, so I lean on it <b>plus</b> reading the topics <b>plus</b> the label-alignment check — three signals, not
+        one. BERTopic's default word-list needed a stop-word + bigram vectorizer for clean labels. Code:
+        <code>ml/bertopic_vs_lda.py</code>, results: <code>ml/topics_results_*.json</code>.</div>
     </section>
   </section>
 </div><!-- /phase2 -->

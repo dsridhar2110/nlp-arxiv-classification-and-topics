@@ -1,0 +1,8 @@
+{
+  "n": 20000,
+  "bertopic_topics": 40,
+  "bertopic_coherence": 0.7797,
+  "lda_K": 25,
+  "lda_coherence": 0.5838,
+  "topics_dominated_by_one_subfield_pct": 80.0
+}
