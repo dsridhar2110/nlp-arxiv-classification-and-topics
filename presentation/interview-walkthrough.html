@@ -79,6 +79,21 @@
   .g-term .chip{font-size:11px;font-weight:700;color:var(--teal-dark);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-left:8px;text-transform:uppercase;letter-spacing:.04em}
   .g-def{font-size:14.5px;color:#475569;margin-top:4px;max-width:80ch}.g-def b{color:var(--ink)}
 
+  /* "explain further" collapsible — study aid */
+  .learnmore{margin-top:10px;border:1px dashed #99f6e4;border-radius:10px;background:#f0fdfa;overflow:hidden}
+  .learnmore>summary{cursor:pointer;list-style:none;padding:9px 13px;font-size:12.5px;font-weight:700;
+    color:var(--teal-dark);display:flex;align-items:center;gap:8px}
+  .learnmore>summary::-webkit-details-marker{display:none}
+  .learnmore>summary .lm-chev{margin-left:auto;transition:.2s;font-size:11px}
+  .learnmore[open]>summary .lm-chev{transform:rotate(180deg)}
+  .learnmore[open]>summary{border-bottom:1px solid #99f6e4}
+  .learnmore .lm-body{padding:11px 15px 14px;font-size:14px;color:#334155;line-height:1.7}
+  .learnmore .lm-body h4{font-size:12px;color:var(--ink);margin:13px 0 3px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+  .learnmore .lm-body h4:first-child{margin-top:0}
+  .learnmore .lm-body p{margin:0}.learnmore .lm-body b{color:var(--ink)}
+  .learnmore .lm-body ul{margin:6px 0 2px 18px}.learnmore .lm-body li{margin:3px 0}
+  .learnmore .lm-rule{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-top:10px;font-size:13.5px;color:#475569}.learnmore .lm-rule b{color:var(--teal-dark)}
+
   .clicks{display:grid;gap:10px}.click{display:flex;gap:12px;align-items:baseline;font-size:15px}
   .click .cn{color:var(--teal-dark);font-weight:800;font-size:13px;min-width:54px}.click b{color:var(--ink)}
 
@@ -310,7 +325,27 @@
       <div class="gitem"><div class="g-term">Supervised vs unsupervised</div><div class="g-def"><b>Supervised</b> = learn from labelled examples (the classifier). <b>Unsupervised</b> = find structure with no labels (the LDA topics). I did both.</div></div>
       <div class="gitem"><div class="g-term">TF-IDF <span class="chip">features</span></div><div class="g-def">"Term Frequency–Inverse Document Frequency." Turns text into numbers by up-weighting words that are distinctive to a document and down-weighting words that appear everywhere.</div></div>
       <div class="gitem"><div class="g-term">Word embeddings</div><div class="g-def">Each word becomes a vector of numbers that captures its meaning, so words used similarly sit close together. What the RNN/LSTM read (vs TF-IDF's word-counts).</div></div>
-      <div class="gitem"><div class="g-term">Logistic Regression &amp; SVM</div><div class="g-def">Two classical classifiers. LogReg draws a weighted line between the classes and is very interpretable; SVM finds the widest-margin boundary. Both strong, fast baselines on TF-IDF.</div></div>
+      <div class="gitem"><div class="g-term">Logistic Regression &amp; SVM</div><div class="g-def">Two classical classifiers. LogReg draws a weighted line between the classes and is very interpretable; SVM finds the widest-margin boundary. Both strong, fast baselines on TF-IDF.
+        <details class="learnmore">
+          <summary>When do I use each? <span class="lm-chev">▼</span></summary>
+          <div class="lm-body">
+            <p>Honest headline: on text they're usually <b>neck-and-neck</b> (mine: SVM 0.920, LogReg 0.917). But there are real reasons to prefer one.</p>
+            <h4>Use Logistic Regression when…</h4>
+            <ul>
+              <li><b>You want a probability, not just yes/no</b> — "I'm 87% sure it's comp-ling." Needed to <b>rank by confidence</b> or set a <b>cost-based threshold</b> (like Fleet Pulse). SVM gives a score/distance, not a natural probability.</li>
+              <li><b>You want interpretability</b> — its coefficients say <em>how much each word pushes the prediction</em>, so you can explain it to a stakeholder.</li>
+            </ul>
+            <p style="margin-top:6px"><em>LogReg = the one that gives a confidence % and a reason.</em></p>
+            <h4>Use SVM (LinearSVC) when…</h4>
+            <ul>
+              <li><b>High-dimensional sparse data — like TF-IDF text.</b> This is SVM's home turf; it's fast and excellent on thousands of text features.</li>
+              <li><b>You care about the borderline cases</b> — it focuses on the trickiest examples (the "support vectors") and draws the widest-margin line, which can generalise a touch better when classes sit close.</li>
+              <li><b>You don't need probabilities</b>, just the cleanest classification.</li>
+            </ul>
+            <p style="margin-top:6px"><em>SVM = the one that obsesses over the hardest cases and draws the cleanest dividing line.</em></p>
+            <div class="lm-rule"><b>Why run both?</b> Two strong baselines that <b>agree</b> is a rigour check — mine landed within 0.003 F1 of each other, so I knew the result was robust, not a fluke of one model. If they'd disagreed wildly, that'd be a red flag.<br><br><b>One-liner:</b> LogReg = probabilities + interpretability; SVM = margins + raw accuracy on sparse text. On text, try both — they usually tie.</div>
+          </div>
+        </details></div></div>
       <div class="gitem"><div class="g-term">RNN &amp; LSTM <span class="chip">deep</span></div><div class="g-def">Neural networks that read a sequence <b>word by word</b>. An <b>RNN</b> carries a running memory; an <b>LSTM</b> is an RNN with gates that fix its "forgetting" problem on longer text. Built here in PyTorch.</div></div>
       <div class="gitem"><div class="g-term">LDA <span class="chip">topics</span></div><div class="g-def">"Latent Dirichlet Allocation." An unsupervised method that models each document as a mix of hidden topics, and each topic as a distribution over words — so it discovers themes without being told them.</div></div>
       <div class="gitem"><div class="g-term">Coherence</div><div class="g-def">A score for how <b>meaningful</b> a discovered topic is — do its top words genuinely belong together. I used it to choose the number of topics.</div></div>
