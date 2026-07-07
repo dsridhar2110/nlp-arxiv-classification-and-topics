@@ -350,6 +350,7 @@
       <div class="gitem"><div class="g-term">LDA <span class="chip">topics</span></div><div class="g-def">"Latent Dirichlet Allocation." An unsupervised method that models each document as a mix of hidden topics, and each topic as a distribution over words — so it discovers themes without being told them.</div></div>
       <div class="gitem"><div class="g-term">Coherence</div><div class="g-def">A score for how <b>meaningful</b> a discovered topic is — do its top words genuinely belong together. I used it to choose the number of topics.</div></div>
       <div class="gitem"><div class="g-term">Regularisation here</div><div class="g-def">For LogReg/SVM I tuned <b>C</b> (L2 regularisation — how hard to penalise big weights, to avoid over-fitting). The deep models use <b>dropout</b> (randomly ignore neurons in training) for the same reason.</div></div>
+      <div class="gitem"><div class="g-term">NER (Named Entity Recognition) <span class="chip">next step</span></div><div class="g-def">An NLP technique that reads free text and <b>pulls out the specific named things</b> — a person, a date, or in a service setting a <b>component or error-code</b>. Where classification puts the <em>whole</em> document in a bucket, NER acts like a <b>highlighter that extracts the key items inside it</b> — turning "helium level dropping" into a structured signal you can route or link to a part. I didn't build it here; it's the natural next step for service tickets.</div></div>
       <div class="gitem"><div class="g-term">Precision · Recall · F1</div><div class="g-def">Precision = of what I flagged, how much was right. Recall = of what's truly positive, how much I caught. F1 balances the two — my headline metric.</div></div>
     </div>
   </section>
@@ -511,9 +512,10 @@
         <div class="arrow">→</div>
         <div class="mapbox"><div class="t">At Siemens</div>Discover <b>recurring fault themes</b> in the ticket backlog nobody labelled.</div>
       </div>
-      <div class="pitch">"And the next step — <b>NER</b> to pull the component or error-code out of the free text — turns
-        'helium level dropping' into a routed, structured signal. It's exactly the NLP the JD asks for on machine logs
-        and notification data."</div>
+      <div class="pitch">"And the next step — <b>Named Entity Recognition (NER)</b>, an NLP technique that pulls the
+        specific named things (a component, an error-code) <em>out of</em> free text — turns 'helium level dropping'
+        into a routed, structured signal. Where classification buckets the whole ticket, NER extracts the key items
+        inside it. It's exactly the NLP the JD asks for on machine logs and notification data."</div>
     </div>
   </section>
 
