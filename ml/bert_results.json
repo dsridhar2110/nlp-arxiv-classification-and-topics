@@ -1,0 +1,10 @@
+{
+  "n_train": 15000,
+  "n_test": 6000,
+  "device": "mps",
+  "tfidf_logreg_f1_same_sample": 0.917,
+  "bert_f1": 0.9157,
+  "bert_precision": 0.9377,
+  "bert_recall": 0.8948,
+  "tfidf_full_data_reference_f1": 0.92
+}

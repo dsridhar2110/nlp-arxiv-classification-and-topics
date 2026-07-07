@@ -1,0 +1,52 @@
+[
+  {
+    "model": "LogReg",
+    "per_label": {
+      "ComputationalLinguistics": {
+        "f1": 0.9238942552109812,
+        "precision": 0.9209446105508539,
+        "recall": 0.9268628551027694,
+        "positive_rate": 0.7226255850808978
+      },
+      "MachineLearning": {
+        "f1": 0.7462937062937063,
+        "precision": 0.7672546012269938,
+        "recall": 0.7264476311490289,
+        "positive_rate": 0.2030368923451148
+      },
+      "HumanComputerInteraction": {
+        "f1": 0.765438936582664,
+        "precision": 0.8670012547051443,
+        "recall": 0.6851760039662865,
+        "positive_rate": 0.07433752257398739
+      }
+    },
+    "macro_f1": 0.8118756326957839,
+    "micro_f1": 0.9193847590265236
+  },
+  {
+    "model": "LinearSVM",
+    "per_label": {
+      "ComputationalLinguistics": {
+        "f1": 0.9193252471715422,
+        "precision": 0.9186230075877171,
+        "recall": 0.9200285612281328,
+        "positive_rate": 0.7226255850808978
+      },
+      "MachineLearning": {
+        "f1": 0.738467193530601,
+        "precision": 0.7478131397729387,
+        "recall": 0.7293519695044473,
+        "positive_rate": 0.2030368923451148
+      },
+      "HumanComputerInteraction": {
+        "f1": 0.7648770166622587,
+        "precision": 0.8197278911564626,
+        "recall": 0.7169062964799207,
+        "positive_rate": 0.07433752257398739
+      }
+    },
+    "macro_f1": 0.807556485788134,
+    "micro_f1": 0.9152200886988784
+  }
+]

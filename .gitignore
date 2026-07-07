@@ -43,3 +43,8 @@ build/
 *.pt
 *.pth
 pyLDAvis*.html
+
+# BERT fine-tune output + model artifacts
+ml/_bert_out/
+*.safetensors
+ml/artifacts/*.joblib

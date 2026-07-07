@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaperLens — How I'd Talk Through It</title>
+<style>
+  :root{
+    --ground:#0f172a; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff;
+    --teal:#0d9488; --teal-dark:#0f766e; --teal-soft:#f0fdfa;
+    --amber:#d97706; --amber-soft:#fffbeb; --violet:#7c3aed; --violet-soft:#f5f3ff; --rose:#e11d48; --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 24px}
+  code{background:#eef2f6;padding:1px 6px;border-radius:5px;font-size:.9em;font-family:ui-monospace,Menlo,monospace}
+
+  header.hero{background:linear-gradient(135deg,#0f172a 0%,#134e4a 100%);color:#fff;padding:48px 0 0}
+  .brandrow{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .logo{height:38px;width:38px;border-radius:9px;background:var(--teal);color:#062925;font-weight:800;
+    display:grid;place-items:center;font-size:19px}
+  .brandrow b{font-size:16px;font-weight:600}.brandrow span{color:#94a3b8;font-size:12px;display:block;margin-top:-3px}
+  .kicker{color:#5eead4;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+  header.hero h1{font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:10px 0 12px;max-width:24ch}
+  header.hero p.lede{color:#cbd5e1;font-size:16px;max-width:62ch;margin-bottom:22px}
+  /* tab bar */
+  .tabbar{display:flex;gap:4px;flex-wrap:wrap}
+  .tabbtn{background:transparent;border:none;color:#cbd5e1;font-size:14px;font-weight:700;
+    padding:12px 18px;cursor:pointer;border-bottom:3px solid transparent;transition:.15s;border-radius:8px 8px 0 0}
+  .tabbtn:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .tabbtn.active{color:#fff;border-bottom-color:var(--teal);background:rgba(255,255,255,.08)}
+  .tabbtn .badge{font-size:10px;background:var(--amber);color:#fff;border-radius:20px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+
+  main{padding:38px 0 60px}
+  .tabpane{display:none} .tabpane.active{display:block;animation:fade .3s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  section{margin-bottom:42px}
+  h2{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-dark);margin-bottom:6px}
+  h2 + .h2sub{font-size:23px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+  .lead-note{color:var(--muted);font-size:15px;margin-bottom:18px;max-width:68ch}.lead-note b{color:var(--ink)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px}
+  .purpose p{font-size:15.5px;color:#1e293b}.purpose p + p{margin-top:12px}.purpose b{color:var(--ink)}
+
+  .story{}.srow{display:flex;gap:16px;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--line)}
+  .srow:last-child{border-bottom:none}
+  .snum{height:30px;width:30px;border-radius:8px;background:var(--teal-soft);color:var(--teal-dark);
+    font-weight:800;display:grid;place-items:center;font-size:14px;flex-shrink:0}
+  .srow p{font-size:15.5px;color:#1e293b}.srow p b{color:var(--ink)}.srow .term{color:var(--teal-dark);font-weight:600}
+
+  .snap{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  .snap th{text-align:left;color:var(--muted);font-weight:600;padding:6px 9px;border-bottom:2px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .snap td{padding:7px 9px;border-bottom:1px solid var(--line);color:#1e293b;vertical-align:top}
+  .snap td.lab{font-variant-numeric:tabular-nums;color:var(--teal-dark);font-weight:700;text-align:center}
+  .snap tr:last-child td{border-bottom:none}
+
+  .board{width:100%;border-collapse:collapse;font-size:14px}
+  .board th{text-align:left;color:var(--muted);font-weight:700;padding:8px 11px;border-bottom:2px solid var(--line);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+  .board td{padding:8px 11px;border-bottom:1px solid var(--line);color:#1e293b}
+  .board td.num{font-family:ui-monospace,monospace;font-weight:700;text-align:right}
+  .board tr:last-child td{border-bottom:none}.board tr.win td{background:var(--teal-soft);font-weight:700}.board tr.win td.num{color:var(--teal-dark)}
+
+  .beats{display:grid;gap:12px}
+  .beat{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .beat .bn{height:34px;width:34px;border-radius:9px;background:var(--ground);color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px}
+  .beat .say{font-weight:700;font-size:15px}.beat .eg{font-size:14px;color:var(--muted);margin-top:2px}.beat .eg b{color:var(--teal-dark);font-weight:600}
+  .beat.extra .bn{background:var(--teal)}
+
+  .spoken{display:grid;gap:16px}.sp{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+  .sp-label{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--teal);padding:4px 10px;border-radius:20px;margin-bottom:10px}
+  .sp-q{font-weight:700;font-size:15.5px;margin-bottom:8px}
+  .sp-words{font-size:15.5px;color:#1e293b;line-height:1.7;border-left:3px solid var(--teal);background:var(--teal-soft);padding:12px 16px;border-radius:0 10px 10px 0}
+  .sp-terms{font-size:13px;color:var(--muted);margin-top:10px}.sp-terms b{color:var(--ink);font-weight:600}
+
+  .gloss{display:grid;gap:0}.gitem{padding:14px 0;border-bottom:1px solid var(--line)}.gitem:last-child{border-bottom:none}
+  .g-term{font-weight:700;font-size:15px;color:var(--ink)}
+  .g-term .chip{font-size:11px;font-weight:700;color:var(--teal-dark);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-left:8px;text-transform:uppercase;letter-spacing:.04em}
+  .g-def{font-size:14.5px;color:#475569;margin-top:4px;max-width:80ch}.g-def b{color:var(--ink)}
+
+  .clicks{display:grid;gap:10px}.click{display:flex;gap:12px;align-items:baseline;font-size:15px}
+  .click .cn{color:var(--teal-dark);font-weight:800;font-size:13px;min-width:54px}.click b{color:var(--ink)}
+
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:11px;overflow:hidden}
+  details[open]{border-color:#99f6e4;box-shadow:0 4px 16px -9px rgba(13,148,136,.3)}
+  summary{cursor:pointer;list-style:none;padding:15px 20px;display:flex;gap:12px;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary .who{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:#f1f5f9;padding:3px 8px;border-radius:6px;flex-shrink:0}
+  summary .q{font-weight:650;font-size:15.5px}summary .chev{margin-left:auto;color:var(--muted);transition:.2s;font-size:12px;flex-shrink:0}
+  details[open] summary .chev{transform:rotate(180deg)}
+  .say-block{padding:4px 20px 18px}.say-block .youtag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-dark);margin-bottom:6px}
+  .say-block .words{font-size:15.5px;color:#1e293b;line-height:1.7;border-left:3px solid var(--teal);background:var(--teal-soft);padding:12px 16px;border-radius:0 10px 10px 0}
+  .say-block .words b{color:var(--ink)}.say-block .words ul{margin:8px 0 2px 18px}.say-block .words li{margin:3px 0}
+  .say-block .tip{font-size:13px;color:var(--muted);margin-top:9px}.say-block .tip b{color:var(--amber)}.say-block .tip.anchor b{color:var(--teal-dark)}
+
+  .callout{border-radius:12px;padding:14px 16px;margin:12px 0;font-size:14.5px}
+  .callout.honest{background:var(--amber-soft);border:1px solid #fcd9a3;color:#7c4a03}.callout.honest b{color:#5a3600}
+  .callout.key{background:var(--teal-soft);border:1px solid #99f6e4;color:#134e4a}.callout.key b{color:#0f766e}
+
+  .bridge{background:linear-gradient(135deg,#0f172a,#134e4a);color:#e2e8f0;border:none}
+  .bridge h2{color:#5eead4}.bridge .h2sub{color:#fff}
+  .maprow{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin:8px 0}
+  .mapbox{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;font-size:14px}
+  .mapbox .t{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#5eead4;font-weight:700;margin-bottom:3px}
+  .arrow{color:#5eead4;font-size:20px;text-align:center}
+  .pitch{background:rgba(94,234,212,.1);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;padding:12px 16px;margin-top:16px;font-size:15px;color:#d1fae5}.pitch b{color:#fff}
+
+  /* phase 2 placeholder */
+  .p2hero{background:var(--violet-soft);border:1px dashed #c4b5fd;border-radius:var(--radius);padding:26px 24px;text-align:center}
+  .p2hero .p2tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--violet);padding:4px 12px;border-radius:20px}
+  .p2hero h3{font-size:22px;font-weight:800;margin:12px 0 6px;color:var(--ink)}
+  .p2hero p{color:#475569;font-size:15px;max-width:58ch;margin:0 auto}
+  .p2list{display:grid;gap:10px;margin-top:16px}
+  .p2item{display:grid;grid-template-columns:26px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 16px;text-align:left}
+  .p2item .dot{height:22px;width:22px;border-radius:6px;background:var(--violet-soft);color:var(--violet);font-weight:800;display:grid;place-items:center;font-size:12px}
+  .p2item b{color:var(--ink)}.p2item .d{font-size:13.5px;color:#475569}
+
+  footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:12px;line-height:1.7}
+  @media(max-width:640px){header.hero h1{font-size:24px}.h2sub{font-size:20px}.maprow{grid-template-columns:1fr;gap:8px}.arrow{transform:rotate(90deg)}
+    .snap th:nth-child(2),.snap td:nth-child(2){display:none}}
+  @media print{body{background:#fff}.tabpane{display:block!important}details{break-inside:avoid}details:not([open]) .say-block{display:block!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brandrow">
+      <div class="logo">¶</div>
+      <div><b>PaperLens</b><span>arXiv Text Classification &amp; Topic Modelling</span></div>
+    </div>
+    <p class="kicker">How I'd talk through it</p>
+    <h1>My notes for explaining this — in plain words.</h1>
+    <p class="lede">What the project is, the story of how I built it, the answers I'd actually say, and the questions
+      they'll ask. Phase 1 is everything I've built so far; Phase 2 (the transformer upgrade) is on the hook.</p>
+    <div class="tabbar">
+      <button class="tabbtn active" onclick="showTab('phase1',this)">Phase 1 · What I built</button>
+      <button class="tabbtn" onclick="showTab('phase2',this)">Phase 2 · Transformer upgrade <span class="badge">soon</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============================ PHASE 1 ============================ -->
+<div id="phase1" class="tabpane active">
+
+  <!-- PURPOSE -->
+  <section>
+    <h2>Start here</h2>
+    <div class="h2sub">What this project is for</div>
+    <div class="card purpose">
+      <p><b>The problem:</b> research (and any organisation) produces a flood of <b>text</b> — papers, tickets, notes —
+        far too much to read and sort by hand. Two jobs come up again and again: <b>"which bucket does this document
+        belong in?"</b> and <b>"what are the hidden themes across all of them?"</b></p>
+      <p><b>What I built:</b> PaperLens does both on <b>arXiv computer-science papers (2016–2025)</b>. Part 1 is a
+        <b>classifier</b> that reads a paper's title or abstract and predicts whether it's about <b>Computational
+        Linguistics</b>. Part 2 is <b>topic modelling</b> that <b>discovers the themes</b> in the whole corpus with no
+        labels at all. A <b>Streamlit</b> app lets a non-technical person see the results and try the classifier.</p>
+      <p><b>Why it matters for me:</b> it's my proof that I can take <b>raw, messy text</b> all the way to working NLP —
+        both the <b>supervised</b> side (classification) and the <b>unsupervised</b> side (topic discovery). And it's the
+        <b>same shape as a Siemens service problem</b>: sort incoming <b>service tickets</b> into hardware/software/
+        calibration, and <b>discover recurring fault themes</b> nobody has labelled yet.</p>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section>
+    <h2>The whole thing, simply</h2>
+    <div class="h2sub">How I built it, from the start</div>
+    <p class="lead-note">The plain-English version of the process — the technical words are in teal so I remember to
+      actually say them. It's the <b>same process</b> I followed on my other projects: data → clean → model → the extra → the app.</p>
+    <div class="card story">
+      <div class="srow"><div class="snum">1</div><p><b>The data and what I'm predicting.</b> I started with arXiv CS
+        papers, each with a <b>Title</b>, an <b>Abstract</b>, and yes/no subfield labels. The thing I'm predicting — the
+        <span class="term">target variable</span> — is the label <b>Computational Linguistics</b>: is this paper about
+        it, <b>yes or no</b>. That's a <b>category</b>, not a number — so this is <span class="term">classification</span>,
+        and the score is <span class="term">F1</span>, not RMSE.</p></div>
+      <div class="srow"><div class="snum">2</div><p><b>Cleaning and turning text into numbers.</b> Raw text can't go
+        into a model, so I <span class="term">pre-processed</span> it with <span class="term">spaCy and nltk</span>:
+        lower-cased, removed <span class="term">stop-words</span> ("the", "of"), and <span class="term">lemmatised</span>
+        (reduced words to their root). Then I turned text into numbers <b>two ways</b>: <span class="term">TF-IDF</span>
+        (weight the distinctive words) for the classical models, and <span class="term">word embeddings + padding</span>
+        for the deep models.</p></div>
+      <div class="srow"><div class="snum">3</div><p><b>The models (classification).</b> I compared <b>classical vs
+        deep</b>. Classical: <span class="term">Logistic Regression</span> and <span class="term">SVM</span> on TF-IDF —
+        fast and interpretable. Deep: an <span class="term">RNN</span> and an <span class="term">LSTM</span> in
+        <span class="term">PyTorch</span> — they read the words in order. I ran each on <b>title-only vs abstract-only</b>
+        and on <b>1,000 vs the full</b> training set, to see what actually moves the score.</p></div>
+      <div class="srow"><div class="snum">4</div><p><b>The extra — topic modelling.</b> The second, unsupervised half:
+        <span class="term">LDA</span> (gensim) to <b>discover the themes</b> across the papers with no labels. I tuned it
+        — <b>10 vs 40 topics</b>, <b>with vs without bigrams</b> — and judged the quality with a
+        <span class="term">coherence</span> score, then visualised it with <span class="term">pyLDAvis</span>, word clouds
+        and t-SNE.</p></div>
+      <div class="srow"><div class="snum">5</div><p><b>The website.</b> Finally I wrapped it in a <b>Streamlit</b> app so
+        anyone — not just a data person — can see the results and <b>try the classifier</b> on a title or abstract.</p></div>
+    </div>
+  </section>
+
+  <!-- DATA SNAPSHOT -->
+  <section>
+    <h2>What the data looks like</h2>
+    <div class="h2sub">A few rows, so it's concrete</div>
+    <p class="lead-note">One row = one paper: its <b>title</b>, its <b>abstract</b>, and yes/no labels for each subfield.
+      (Illustrative examples — the real CSVs aren't committed to the repo.)</p>
+    <div class="card">
+      <table class="snap">
+        <thead><tr><th>Title</th><th>Abstract (start)</th><th>Comp&nbsp;Ling</th><th>ML</th><th>HCI</th></tr></thead>
+        <tbody>
+          <tr><td>Attention-based Neural Machine Translation</td><td>"We propose a sequence-to-sequence model with attention for translating…"</td><td class="lab">1</td><td class="lab">1</td><td class="lab">0</td></tr>
+          <tr><td>A Touchscreen Gesture Study in Virtual Reality</td><td>"We run a user study measuring gesture accuracy across 40 participants…"</td><td class="lab">0</td><td class="lab">0</td><td class="lab">1</td></tr>
+          <tr><td>Gradient Boosting for Tabular Anomaly Detection</td><td>"We benchmark tree ensembles on imbalanced tabular streams…"</td><td class="lab">0</td><td class="lab">1</td><td class="lab">0</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:14px;color:var(--muted);margin-top:14px">
+        <b style="color:var(--ink)">Columns:</b> <code>Title</code>, <code>Abstract</code>, and three yes/no labels
+        (<code>ComputationalLinguistics</code>, <code>MachineLearning</code>, <code>HumanComputerInteraction</code>).
+        &nbsp;·&nbsp; <b style="color:var(--ink)">Split:</b> already provided as <code>train_set.csv</code> /
+        <code>dev_set.csv</code> / <code>test_set.csv</code>. &nbsp;·&nbsp; <b style="color:var(--ink)">My target:</b>
+        the <code>ComputationalLinguistics</code> column.</p>
+    </div>
+  </section>
+
+  <!-- THE METRIC -->
+  <section>
+    <h2>The score</h2>
+    <div class="h2sub">What metric we use — and why it's F1, not RMSE</div>
+    <div class="card">
+      <p style="font-size:15.5px;color:#1e293b"><b>This is a classification project, so the metric is F1 — not RMSE.</b>
+        RMSE measures how far off you are when you predict a <em>number</em> (like a star rating). Here I predict a
+        <em>category</em> (comp-ling: yes/no), so I score it differently.</p>
+      <div style="margin-top:12px" class="gloss">
+        <div class="gitem"><div class="g-term">Precision</div><div class="g-def">Of the papers I <b>flagged</b> as comp-ling, how many really were. High precision = few false alarms.</div></div>
+        <div class="gitem"><div class="g-term">Recall</div><div class="g-def">Of the papers that <b>truly are</b> comp-ling, how many I caught. High recall = few misses.</div></div>
+        <div class="gitem"><div class="g-term">F1 <span class="chip">the headline</span></div><div class="g-def">A single number that <b>balances precision and recall</b> (their harmonic mean). I use it because accuracy can be misleading when the classes aren't 50/50 — F1 keeps me honest on both false alarms and misses. My best is <b>F1 ≈ 0.92</b>.</div></div>
+        <div class="gitem"><div class="g-term">PR curve</div><div class="g-def">A picture of the precision/recall trade-off as I move the decision threshold — so I can pick the operating point I want, not just 0.5.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section>
+    <h2>How it ended up</h2>
+    <div class="h2sub">Honest results on the test set</div>
+    <p class="lead-note">Best-per-model, on the full training set (F1 — higher is better). Two clear findings fall out.</p>
+    <div class="card">
+      <table class="board">
+        <thead><tr><th>Model</th><th>Input</th><th>F1</th><th>Precision</th><th>Recall</th></tr></thead>
+        <tbody>
+          <tr class="win"><td>SVM (TF-IDF)</td><td>Abstract</td><td class="num">0.920</td><td class="num">0.917</td><td class="num">0.924</td></tr>
+          <tr><td>LSTM (PyTorch)</td><td>Abstract</td><td class="num">0.917</td><td class="num">0.931</td><td class="num">0.902</td></tr>
+          <tr><td>Logistic Regression</td><td>Abstract</td><td class="num">0.917</td><td class="num">0.959</td><td class="num">0.878</td></tr>
+          <tr><td>SVM (TF-IDF)</td><td>Title</td><td class="num">0.908</td><td class="num">0.898</td><td class="num">0.919</td></tr>
+          <tr><td>LSTM (PyTorch)</td><td>Title</td><td class="num">0.908</td><td class="num">0.919</td><td class="num">0.897</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:14.5px;color:#1e293b;margin-top:14px">
+        <b>Finding 1 — abstracts beat titles:</b> more words = more signal (F1 ~0.92 on abstracts vs ~0.90 on titles).
+        <br><b>Finding 2 — the deep LSTM only <em>tied</em> the classical TF-IDF+SVM.</b> On a clean, medium-sized text
+        task, a well-tuned classical model is genuinely hard to beat — a mature thing to say, and it's exactly why the
+        transformer upgrade (Phase 2) is the honest next step, not the RNN/LSTM.</p>
+    </div>
+  </section>
+
+  <!-- IF NO SCREEN -->
+  <section>
+    <h2>If I can't share my screen</h2>
+    <div class="h2sub">The key questions, answered out loud</div>
+    <div class="spoken">
+      <div class="sp">
+        <span class="sp-label">The models</span>
+        <div class="sp-q">"What models did you use, and why compare them?"</div>
+        <div class="sp-words">"I compared <b>classical vs deep</b>. The classical side was <b>Logistic Regression and
+          SVM on TF-IDF</b> — fast, interpretable, strong baselines. The deep side was an <b>RNN and an LSTM</b> in
+          PyTorch, which read the words <em>in order</em> instead of as a bag. I did that deliberately, to show whether
+          the extra complexity of deep models actually earns its keep here — and honestly, it didn't beat the classical
+          SVM on this data. Knowing when the simple model is enough is the point."</div>
+        <div class="sp-terms"><b>Key terms:</b> classical (LogReg / SVM on TF-IDF) vs deep (RNN / LSTM) · best F1 ≈ 0.92 · "simple was enough"</div>
+      </div>
+      <div class="sp">
+        <span class="sp-label">Text → numbers</span>
+        <div class="sp-q">"How do you turn text into something a model can use?"</div>
+        <div class="sp-words">"Two ways. For the classical models, <b>TF-IDF</b> — it turns each document into a vector
+          by weighting the words that make it distinctive (down-weighting words that appear everywhere). For the deep
+          models, <b>word embeddings</b> — each word becomes a vector that captures meaning, and I pad the sequences so
+          they're the same length. Before either, I clean the text: lower-case, drop stop-words, and lemmatise with
+          spaCy and nltk."</div>
+        <div class="sp-terms"><b>Key terms:</b> TF-IDF (weight distinctive words) · embeddings (meaning as vectors) · clean → stop-words → lemmatise</div>
+      </div>
+      <div class="sp">
+        <span class="sp-label">Topic modelling</span>
+        <div class="sp-q">"What's the topic-modelling part, and how is it different?"</div>
+        <div class="sp-words">"That half is <b>unsupervised</b> — no labels. I used <b>LDA</b> to discover the themes
+          across all the papers: it finds clusters of words that tend to occur together and calls each a topic. I tuned
+          the number of topics (10 vs 40) and whether to include bigrams, and judged quality with a <b>coherence</b>
+          score — does each topic hang together meaningfully — then visualised it with pyLDAvis and word clouds. For a
+          service team, that's how you'd surface recurring fault themes nobody has labelled yet."</div>
+        <div class="sp-terms"><b>Key terms:</b> unsupervised · LDA discovers themes · coherence = topic quality · vs supervised classification</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section>
+    <h2>What every word means</h2>
+    <div class="h2sub">So I can explain it, not just name it</div>
+    <div class="card gloss">
+      <div class="gitem"><div class="g-term">Classification vs regression</div><div class="g-def"><b>Classification</b> predicts a category (comp-ling: yes/no) — scored by F1/accuracy. <b>Regression</b> predicts a number — scored by RMSE. This project is classification.</div></div>
+      <div class="gitem"><div class="g-term">Supervised vs unsupervised</div><div class="g-def"><b>Supervised</b> = learn from labelled examples (the classifier). <b>Unsupervised</b> = find structure with no labels (the LDA topics). I did both.</div></div>
+      <div class="gitem"><div class="g-term">TF-IDF <span class="chip">features</span></div><div class="g-def">"Term Frequency–Inverse Document Frequency." Turns text into numbers by up-weighting words that are distinctive to a document and down-weighting words that appear everywhere.</div></div>
+      <div class="gitem"><div class="g-term">Word embeddings</div><div class="g-def">Each word becomes a vector of numbers that captures its meaning, so words used similarly sit close together. What the RNN/LSTM read (vs TF-IDF's word-counts).</div></div>
+      <div class="gitem"><div class="g-term">Logistic Regression &amp; SVM</div><div class="g-def">Two classical classifiers. LogReg draws a weighted line between the classes and is very interpretable; SVM finds the widest-margin boundary. Both strong, fast baselines on TF-IDF.</div></div>
+      <div class="gitem"><div class="g-term">RNN &amp; LSTM <span class="chip">deep</span></div><div class="g-def">Neural networks that read a sequence <b>word by word</b>. An <b>RNN</b> carries a running memory; an <b>LSTM</b> is an RNN with gates that fix its "forgetting" problem on longer text. Built here in PyTorch.</div></div>
+      <div class="gitem"><div class="g-term">LDA <span class="chip">topics</span></div><div class="g-def">"Latent Dirichlet Allocation." An unsupervised method that models each document as a mix of hidden topics, and each topic as a distribution over words — so it discovers themes without being told them.</div></div>
+      <div class="gitem"><div class="g-term">Coherence</div><div class="g-def">A score for how <b>meaningful</b> a discovered topic is — do its top words genuinely belong together. I used it to choose the number of topics.</div></div>
+      <div class="gitem"><div class="g-term">Regularisation here</div><div class="g-def">For LogReg/SVM I tuned <b>C</b> (L2 regularisation — how hard to penalise big weights, to avoid over-fitting). The deep models use <b>dropout</b> (randomly ignore neurons in training) for the same reason.</div></div>
+      <div class="gitem"><div class="g-term">Precision · Recall · F1</div><div class="g-def">Precision = of what I flagged, how much was right. Recall = of what's truly positive, how much I caught. F1 balances the two — my headline metric.</div></div>
+    </div>
+  </section>
+
+  <!-- STRUCTURE -->
+  <section>
+    <h2>The structure to lean on</h2>
+    <div class="h2sub">However they ask it, walk these 6 beats</div>
+    <div class="beats">
+      <div class="beat"><div class="bn">1</div><div><div class="say">"I started with the data…"</div><div class="eg"><b>Here:</b> arXiv CS papers — title + abstract + yes/no subfield labels; target = Computational Linguistics.</div></div></div>
+      <div class="beat"><div class="bn">2</div><div><div class="say">"I cleaned it and turned text into numbers…"</div><div class="eg"><b>Here:</b> spaCy/nltk clean → TF-IDF for classical, word embeddings for deep.</div></div></div>
+      <div class="beat"><div class="bn">3</div><div><div class="say">"Then I compared models, because…"</div><div class="eg"><b>Here:</b> LogReg &amp; SVM (classical) vs RNN &amp; LSTM (deep) — to test if deep earns its keep.</div></div></div>
+      <div class="beat"><div class="bn">4</div><div><div class="say">"Here's how well it did…"</div><div class="eg"><b>Here:</b> best F1 ≈ 0.92 (SVM, abstracts); abstracts beat titles; LSTM only tied SVM.</div></div></div>
+      <div class="beat"><div class="bn">5</div><div><div class="say">"Then the unsupervised half…"</div><div class="eg"><b>Here:</b> LDA topic modelling — tuned K &amp; bigrams, judged by coherence, visualised.</div></div></div>
+      <div class="beat"><div class="bn">6</div><div><div class="say">"And I made it usable…"</div><div class="eg"><b>Here:</b> a Streamlit app to see results and try the classifier. Next: fine-tune BERT (Phase 2).</div></div></div>
+      <div class="beat extra"><div class="bn">+</div><div><div class="say">If they dig in — the extras</div><div class="eg">the <b>transformer/BERT upgrade</b>, and how it maps to <b>service-ticket triage</b>.</div></div></div>
+    </div>
+  </section>
+
+  <!-- CLICK PATH -->
+  <section>
+    <h2>If I DO get to share my screen</h2>
+    <div class="h2sub">The order to click — the Streamlit app</div>
+    <div class="card clicks">
+      <div class="click"><span class="cn">Start</span><span><b>Overview</b> — "This classifies papers by subfield and discovers themes." Show the results table.</span></div>
+      <div class="click"><span class="cn">Then</span><span><b>Try the classifier</b> — paste an abstract, watch it predict comp-ling / not, and read the confidence.</span></div>
+      <div class="click"><span class="cn">Then</span><span><b>Topics</b> — the LDA topics / word clouds: "here are the themes it found with no labels."</span></div>
+      <div class="click"><span class="cn">End</span><span><b>The honest bit</b> — "classical SVM already hits 0.92; my next step is fine-tuning BERT to beat it" (Phase 2).</span></div>
+    </div>
+  </section>
+
+  <!-- CONVERSATION / QUESTIONNAIRE -->
+  <section>
+    <h2>The conversation</h2>
+    <div class="h2sub">Questions they'll ask — your questionnaire</div>
+    <p class="lead-note">Written the way I'd say them. Teal box = what I'd say; the small note is the one thing to land.</p>
+    <div class="qa">
+      <details open>
+        <summary><span class="who">They ask</span><span class="q">Walk me through what you built.</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"It's two NLP tasks on arXiv CS papers. First, a <b>classifier</b> that predicts whether a paper is
+            about Computational Linguistics from its title or abstract — I compared classical TF-IDF models (LogReg, SVM)
+            against deep models (RNN, LSTM), and the SVM hit about <b>0.92 F1</b>. Second, <b>LDA topic modelling</b> to
+            discover the themes across the corpus with no labels, tuned by coherence. Then I wrapped it in a Streamlit app
+            so a non-technical person can try it."</div>
+          <div class="tip"><b>Land this:</b> supervised classification + unsupervised topics + a usable app — in one breath.</div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">What's the target, and what metric — is it RMSE?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"The target is a <b>category</b> — is the paper Computational Linguistics, yes or no — so it's
+            <b>classification</b>, and I score it with <b>F1</b>, not RMSE. RMSE is for predicting numbers; F1 balances
+            precision and recall, which matters because the classes aren't perfectly even. My best is F1 ≈ 0.92."</div>
+          <div class="tip"><b>Land this:</b> classification → F1; RMSE is for regression. Never say "RMSE" for this one.</div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">TF-IDF vs word embeddings — what's the difference?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"TF-IDF treats a document as a <b>bag of weighted words</b> — it counts words but ignores order,
+            and weights the distinctive ones. Embeddings give each word a <b>meaning vector</b>, and the deep models read
+            them <b>in order</b>. So embeddings can capture 'not good' ≠ 'good' where TF-IDF can't — but on this clean,
+            topic-level task, the word-counts were already enough, which is why TF-IDF+SVM won."</div>
+          <div class="tip"><b>Land this:</b> TF-IDF = word-counts, order-blind; embeddings = meaning + order.</div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">Why did the LSTM not beat the SVM?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"Because on <b>this</b> task, the simple model already has the signal. Four reasons:
+            <ul>
+              <li><b>1 · The signal is in the vocabulary, not the word order.</b> Whether a paper is Computational
+                Linguistics is basically given away by <em>which words appear</em> — 'parser', 'corpus', 'syntax',
+                'translation'. You don't need to understand the <em>order</em> of the words; you just need to spot them.
+                <b>TF-IDF does exactly that</b>, so the classical model already captures almost all the signal.</li>
+              <li><b>2 · Deep models only earn their edge when order and context matter</b> — negation ('<em>not</em>
+                good' vs 'good'), long-range dependencies. In topic-spotting, order barely matters, so the LSTM's one big
+                advantage (reading words <em>in sequence</em>) has almost nothing to add here.</li>
+              <li><b>3 · TF-IDF + a linear model is a famously strong baseline</b> for 'which bucket is this document' —
+                a well-known result in NLP. It's simply very hard to beat on straightforward text categorisation.</li>
+              <li><b>4 · Deep models are data-hungry and need heavy tuning</b> — mine ran only a few epochs. Even fully
+                tuned, there's little headroom above TF-IDF on this kind of task.</li>
+            </ul>
+            So I'd rather report honestly that the simple model was enough than pretend the fancy one won. The real
+            upgrade isn't a bigger RNN — it's a <b>transformer like BERT that understands context</b>, which is my Phase 2."</div>
+          <div class="tip anchor"><b>The one-liner to land:</b> "The signal here lives in the vocabulary, not the word
+            order — so a bag-of-words model already captures it, and the LSTM's sequence-modelling adds little. Deep
+            learning wins when order and context carry the meaning; here they don't." <b style="color:var(--amber)">Knowing
+            when the simple model is enough is a senior signal.</b></div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">How is LDA different from the classifier?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"The classifier is <b>supervised</b> — I told it the right answers and it learned to reproduce them.
+            LDA is <b>unsupervised</b> — no labels; it reads all the papers and discovers clusters of words that co-occur,
+            and calls each a topic. So it can surface themes I never defined. I judged the topics with a <b>coherence</b>
+            score and chose the number of topics that scored best."</div>
+          <div class="tip"><b>Land this:</b> supervised (predict a known label) vs unsupervised (discover unknown themes).</div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">Did you use BERT / a transformer?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"Not in this version — and I won't pretend I did. I built the classical and RNN/LSTM models and
+            benchmarked them honestly. <b>Fine-tuning BERT is my scoped next step</b> — it's a transformer pre-trained on
+            huge text that understands context, so it should beat the 0.92 F1, especially on the harder cases. I know
+            exactly how I'd do it; I just haven't shipped it yet."</div>
+          <div class="tip"><b>Land this:</b> honest "BERT is next, not done." (That's literally Phase 2 of this guide.)</div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">Was there any regularisation?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"Yes. For LogReg and SVM I tuned <b>C</b> — that's L2 regularisation, which penalises overly-large
+            weights so the model doesn't over-fit the training words. The deep models use <b>dropout</b> — randomly
+            switching off neurons during training so the network can't over-rely on any one feature. Same goal both ways:
+            generalise, don't memorise."</div>
+          <div class="tip"><b>Land this:</b> C = L2 for the classical models; dropout for the deep ones.</div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">Explain it to someone non-technical.</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"It reads a research paper and sorts it into the right topic bucket automatically — and separately,
+            it reads thousands of them and tells you the main themes running through them, without anyone labelling a
+            thing."</div>
+          <div class="tip"><b>Land this:</b> one sentence — sort documents + surface themes. Your CXO answer.</div>
+        </div>
+      </details>
+      <details>
+        <summary><span class="who">They ask</span><span class="q">How does this relate to a healthcare service role?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"Swap 'paper' for 'service ticket'. The classifier becomes <b>ticket triage</b> — sort each incoming
+            ticket into hardware / software / calibration / connectivity and route it. The topic modelling becomes
+            <b>issue-theme discovery</b> — surface recurring faults nobody has labelled. And the next step, NER, would pull
+            out the component or error-code to route automatically. Same techniques, service data instead of papers."</div>
+          <div class="tip"><b>Land this:</b> classify tickets + discover fault themes = the service version of this exact project.</div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- SIEMENS BRIDGE -->
+  <section>
+    <div class="card bridge">
+      <h2>The same idea, at Siemens</h2>
+      <div class="h2sub">Service-ticket triage + theme discovery</div>
+      <p style="color:#cbd5e1;margin-bottom:18px;font-size:15px">"What I built for research papers is the same shape as
+        the service organisation's text problem — just swap the documents." Same two moves:</p>
+      <div class="maprow">
+        <div class="mapbox"><div class="t">In PaperLens</div>Classify a paper as <b>Computational Linguistics or not</b>.</div>
+        <div class="arrow">→</div>
+        <div class="mapbox"><div class="t">At Siemens</div>Classify a <b>service ticket</b> into hardware / software / calibration / urgent.</div>
+      </div>
+      <div class="maprow">
+        <div class="mapbox"><div class="t">In PaperLens</div>Use <b>LDA</b> to discover the themes across all papers.</div>
+        <div class="arrow">→</div>
+        <div class="mapbox"><div class="t">At Siemens</div>Discover <b>recurring fault themes</b> in the ticket backlog nobody labelled.</div>
+      </div>
+      <div class="pitch">"And the next step — <b>NER</b> to pull the component or error-code out of the free text — turns
+        'helium level dropping' into a routed, structured signal. It's exactly the NLP the JD asks for on machine logs
+        and notification data."</div>
+    </div>
+  </section>
+
+  <!-- HONESTY -->
+  <section>
+    <h2>Keep me honest</h2>
+    <div class="h2sub">What's real, and what's next</div>
+    <div class="callout honest"><b>Say these plainly, don't hide them:</b> the serving layer is <b>Streamlit</b>, not
+      FastAPI. <b>BERT was discussed, not trained</b> — it's Phase 2. The framing is academic (arXiv) — I <b>add the
+      service spin</b> (ticket triage) myself. And the metric is <b>F1</b> — this is classification, so I never say "RMSE".</div>
+    <div class="callout key"><b>The one-line honesty close:</b> "The classical model already hits 0.92 F1 and is fully
+      explainable. My next step is fine-tuning a transformer (BERT) to push past it — I've scoped exactly how, and that's
+      what Phase 2 of this project is."</div>
+  </section>
+
+  <footer style="border:none;padding-top:8px">PaperLens is an independent portfolio project (originally the FIT
+    NLP assignment). Classification: TF-IDF + LogReg/SVM vs PyTorch RNN/LSTM (best F1 ≈ 0.92). Topics: gensim LDA with
+    coherence. UI: Streamlit. Transformer (BERT) upgrade is Phase 2.</footer>
+
+</div><!-- /phase1 -->
+
+<!-- ============================ PHASE 2 ============================ -->
+<div id="phase2" class="tabpane">
+  <section>
+    <div class="p2hero">
+      <span class="p2tag" style="background:var(--teal)">✓ Built · fine-tuned DistilBERT</span>
+      <h3>Phase 2 — the transformer upgrade</h3>
+      <p>I fine-tuned a transformer (DistilBERT) on the binary Computational-Linguistics task. The honest result: it
+        <b>tied</b> the classical model — and understanding <em>why</em> is the most valuable thing here.</p>
+    </div>
+
+    <section style="margin-top:24px">
+      <h2>The result</h2>
+      <div class="h2sub">Transformer vs classical — same data, apples-to-apples</div>
+      <p class="lead-note">Fine-tuned DistilBERT vs TF-IDF + Logistic Regression on the <b>same</b> 15,000-document
+        sample (F1 — higher is better).</p>
+      <div class="card">
+        <table class="board">
+          <thead><tr><th>Model</th><th>F1</th><th>Precision</th><th>Recall</th></tr></thead>
+          <tbody>
+            <tr><td>TF-IDF + LogReg <span style="color:var(--muted);font-size:12px">(same 15k sample)</span></td><td class="num">0.917</td><td class="num">—</td><td class="num">—</td></tr>
+            <tr><td>DistilBERT <span style="color:var(--muted);font-size:12px">(fine-tuned)</span></td><td class="num">0.916</td><td class="num">0.938</td><td class="num">0.895</td></tr>
+            <tr><td>TF-IDF + SVM <span style="color:var(--muted);font-size:12px">(full 217k, reference)</span></td><td class="num">0.920</td><td class="num">—</td><td class="num">—</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:15px;color:#1e293b;margin-top:14px"><b>The finding: BERT tied the classical model
+          (0.916 vs 0.917) — it did not beat it.</b> And that's a genuinely strong, honest thing to be able to explain.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Why it tied</h2>
+      <div class="h2sub">The most important thing to understand from Phase 2</div>
+      <div class="card">
+        <p style="font-size:15px;color:#1e293b">It's the <b>same reason the classical model won in Phase 1, taken to its
+          conclusion.</b> This task is decided by <b>vocabulary, not context</b>: whether a paper is Computational
+          Linguistics is given away by <em>which words appear</em> — "parser", "corpus", "syntax". A transformer's
+          superpower is understanding <b>meaning in context</b> — negation, word order, ambiguity. But here there's
+          barely any ambiguity to resolve — the words <em>are</em> the answer — so BERT has nothing extra to grab that
+          TF-IDF didn't already have.</p>
+        <div class="callout key" style="margin-top:12px"><b>The one-liner to say:</b> "BERT shines when meaning depends
+          on context; here the topic is written on the surface in the vocabulary, so a keyword model already captures it,
+          and the transformer has no extra edge. A transformer isn't automatically better — you use it where context
+          matters, and here it doesn't."</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Let's talk it through</h2>
+      <div class="h2sub">The Phase 2 story, the way I'd actually say it</div>
+      <div class="card" style="line-height:1.75;font-size:15.5px;color:#1e293b">
+        <p><b>"So why did you even bother with BERT?"</b><br>
+          Because it's the state-of-the-art for text, and the honest thing is to <b>try it, not assume</b>. BERT
+          understands the <em>meaning</em> of words in context, not just which words are present — so on paper it should
+          be the stronger tool. I fine-tuned DistilBERT on the same task to actually check whether it helped.</p>
+        <p style="margin-top:12px"><b>"And what happened to the F1?"</b><br>
+          Almost nothing changed. <b>BERT scored 0.916; the classical TF-IDF model scored 0.917</b> on the same data —
+          basically identical (and the full-data classical model was 0.920). So BERT <b>didn't get worse — it just
+          didn't get better.</b> The fancy model and the simple model landed in the exact same place.</p>
+        <p style="margin-top:12px"><b>"Then why didn't the fancy model win?"</b><br>
+          Because this is a <b>vocabulary</b> problem, not a <b>context</b> problem. Whether a paper is Computational
+          Linguistics is basically decided by <em>which words show up</em> — "parser", "corpus", "syntax".
+          <b>TF-IDF turns those words straight into numbers</b>, so the simple model already has the answer. There's no
+          hidden meaning to decode — so BERT's real talent (reading context) just sits unused. <b>When the words
+          <em>are</em> the answer, a keyword model is all you need.</b></p>
+      </div>
+    </section>
+
+    <section>
+      <h2>When WOULD BERT have won?</h2>
+      <div class="h2sub">A different dataset where context — not keywords — decides it</div>
+      <p class="lead-note">A great follow-up to be ready for: "give me a task where the transformer <em>would</em> have
+        beaten TF-IDF." Here's the cleanest example.</p>
+      <div class="card">
+        <p style="font-size:15.5px;color:#1e293b">Imagine the input isn't "title + abstract → topic", but
+          <b>customer feedback → is this positive or negative</b> (that's called <b>sentiment analysis</b>). Now the
+          <em>same words</em> can mean opposite things, because <b>meaning depends on order and on little words like
+          "not"</b>:</p>
+        <div style="margin-top:12px" class="gloss">
+          <div class="gitem"><div class="g-term">"The scanner is reliable." <span class="chip" style="background:#dcfce7;color:#166534">positive</span></div><div class="g-def">Words: <em>scanner, reliable</em>.</div></div>
+          <div class="gitem"><div class="g-term">"The scanner is <b>not</b> reliable." <span class="chip" style="background:#fee2e2;color:#991b1b">negative</span></div><div class="g-def">Almost the <b>same words</b> — just one "not" — but the <b>opposite meaning</b>.</div></div>
+        </div>
+        <p style="font-size:15px;color:#1e293b;margin-top:12px"><b>TF-IDF would be fooled here</b> — it just sees two
+          nearly identical bags of words ("scanner", "reliable") and can't tell them apart; to it, "not" is only one more
+          token. <b>BERT would nail it</b>, because it reads the words <em>in context</em> and understands that "not"
+          flips the whole meaning. That's exactly where a transformer earns its keep — <b>negation, sarcasm, word order,
+          long-range meaning</b>. My topic task had none of that; sentiment is full of it.</p>
+        <div class="callout key"><b>The rule to remember:</b> use TF-IDF / keywords when the answer is in <b>which words
+          appear</b> (topics, spam, subject tagging). Reach for a <b>transformer</b> when the answer depends on <b>what
+          the words mean together</b> (sentiment, intent, negation). <b>For Siemens:</b> classifying a ticket's
+          <em>subject</em> → keywords are fine; judging a customer's <em>satisfaction tone</em>, or whether an engineer's
+          note says a fault <em>did</em> or <em>didn't</em> recur → that's transformer territory.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What a transformer / BERT actually is</h2>
+      <div class="h2sub">Plain-English, so it's study-ready</div>
+      <div class="card gloss">
+        <div class="gitem"><div class="g-term">Transformer</div><div class="g-def">A neural-network design that reads all the words <b>at once</b> and lets each word <b>look at every other word</b> to decide what matters — instead of shuffling through them one at a time like an RNN. That's why it handles long text and meaning far better.</div></div>
+        <div class="gitem"><div class="g-term">Attention <span class="chip">the key idea</span></div><div class="g-def">The mechanism inside a transformer: for each word, it works out <b>which other words are relevant</b> and weights them. "Bank" near "river" vs near "money" gets understood differently — that's attention resolving context.</div></div>
+        <div class="gitem"><div class="g-term">BERT</div><div class="g-def">A transformer <b>pre-trained on a huge pile of text</b> so it already "knows language", which you then <b>fine-tune</b> on your small labelled task. You inherit the language understanding and only teach the specifics. <b>DistilBERT</b> is a smaller, faster BERT — what I used.</div></div>
+        <div class="gitem"><div class="g-term">Fine-tuning</div><div class="g-def">Taking the pre-trained model and training it a little more on <b>your</b> labelled data, so it adapts to your task. That's literally what I did here for Computational-Linguistics classification.</div></div>
+        <div class="gitem"><div class="g-term">Why it beats TF-IDF / RNNs <em>in general</em></div><div class="g-def">TF-IDF is order-blind word-counts; RNNs read in sequence but forget over long spans; the transformer sees everything at once <b>and</b> understands context. So it usually wins when <b>meaning depends on context</b> — just not on a task like this one, where the vocabulary alone decides it.</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>The new interview card</h2>
+      <div class="h2sub">"Did you use BERT?" — the answer flips</div>
+      <details open>
+        <summary><span class="who">They ask</span><span class="q">Did you use a transformer / BERT? Did it help?</span><span class="chev">▼</span></summary>
+        <div class="say-block"><div class="youtag">I'd say</div>
+          <div class="words">"Yes — I <b>fine-tuned DistilBERT</b> on the classification task. Honestly, it <b>tied</b> the
+            classical TF-IDF model — about 0.916 vs 0.917 — it didn't beat it. And that's the interesting part: this task
+            is decided by <b>vocabulary, not context</b>, so a keyword model already captures the signal and BERT's
+            context-understanding has little extra to add. A bigger model on the full data might edge ahead by a point,
+            but the real lesson is that <b>a transformer isn't automatically better — you reach for it when meaning
+            depends on context.</b> I'd rather know that than chase a fourth decimal."</div>
+          <div class="tip anchor"><b>Land this:</b> you <em>can</em> do transformers (real, fine-tuned) <em>and</em> you
+            have the judgement to know when they help. That combination is what's senior.</div>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <div class="callout honest"><b>The honest caveats (never over-claim):</b> this was <b>DistilBERT</b> (a smaller,
+        faster BERT), fine-tuned on a <b>15k sample</b>, 2 epochs, abstracts truncated to 128 tokens, on my laptop's GPU.
+        A larger model on the full 217k with more epochs <b>might</b> edge ahead by a point or two — so the honest claim
+        is "under a realistic budget it tied; I'd expect at most a small gain from full fine-tuning, because the task
+        isn't context-heavy." Code: <code>ml/bert_finetune.py</code>, results: <code>ml/bert_results.json</code>.</div>
+      <div class="callout key"><b>Still on the hook (next):</b> an optional <b>BERTopic</b> (transformer-embedding topic
+        modelling) to compare against LDA, and the <b>website layer + deploy</b>. We'll add those the same honest way.</div>
+    </section>
+  </section>
+</div><!-- /phase2 -->
+
+</main>
+
+<script>
+  function showTab(id, btn){
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
